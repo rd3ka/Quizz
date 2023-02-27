@@ -1,0 +1,24 @@
+.again:hover::after {
+    content: 'Play Again?';
+}
+
+.home:hover::after {
+    content: 'Going Home?';
+}
+
+#fs-prefix {
+    color: #4e6e81e2;
+    animation: bounce .5s;
+    animation-direction: alternate;
+    animation-timing-function: cubic-bezier(.5, 0.05, 1, .5);
+    animation-iteration-count: 2;
+}
+
+@keyframes bounce {
+    from {
+        transform: translate3d(0,0,0);
+    }
+    to {
+        transform: translate3d(0, 25px, 0);
+    }
+}

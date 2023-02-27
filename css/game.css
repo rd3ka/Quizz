@@ -1,0 +1,72 @@
+.choice-container {
+    display: flex;
+    margin-bottom: 0.5rem;
+    width: 100%;
+    font-size: 1.8rem;
+    background-color: #F9F5E7;
+    border: 0.1rem solid #00719a73;
+}
+
+.choice-container:hover {
+    cursor: pointer;
+    border: 0.1rem solid #00425ab0;
+    box-shadow: 0 0.4rem 1.4rem 0 #00425a8d;
+    transform: translateY(-0.1rem);
+    transition: transform .3s ease;
+}
+
+.choice-container:hover .choice-prefix {
+    font-weight: bold;
+}
+
+.choice-prefix {
+    padding: 1.5rem 2.5rem;
+    background-color: #00719a;
+    color: #F9F5E7;
+}
+
+.choice-text {
+    padding: 1.5rem;
+    width: 100%;
+}
+
+h2 {
+    font-weight: bold;
+}
+
+.correct {
+    background-color: #9dc08bc8;
+    transition: all .3s ease;
+}
+
+.incorrect {
+    background-color: #e96478e3;
+    transition: all .3s ease;
+}
+
+#hud {
+    display: flex;
+    justify-content: space-between;
+}
+
+.hud-prefix {
+    text-align: center;
+    font-size: 1.2rem;
+}
+
+.hud-main-text {
+    text-align: center;
+}
+
+#progressbar{
+    margin-top: 1.5rem;
+    width: 100%;
+    height: 1.2rem;
+    border: 0.3rem solid #00719a;
+}
+
+#progressBarFull {
+    height: 0.6rem;
+    background-color: #00719a;
+    width: 0%;
+}
