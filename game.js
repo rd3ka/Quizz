@@ -6,8 +6,8 @@ const progressBarFull = document.getElementById("progressBarFull");
 
 let currentQuestion = {};
 let acceptingAnswers = false;
-let score = 0;
-let questionCounter = 0;
+let score = 0,
+  questionCounter = 0;
 let availableQuestions = [];
 
 let questions = [];
@@ -15,15 +15,15 @@ let questions = [];
 fetch("questions.json")
   .then((res) => res.json())
   .then((loadedQuestions) => {
-    questions = loadedQuestions;
     console.log(loadedQuestions);
+    questions = loadedQuestions;
     start();
   })
   .catch((err) => {
     console.error(err);
   });
 
-const CORRECT_BONUS = 5;
+const CORRECT_BONUS = 10;
 const MAX_QUESTIONS = questions.length;
 
 start = () => {
@@ -36,11 +36,14 @@ start = () => {
 getNewQuestion = () => {
   if (availableQuestions.length === 0 || questionCounter >= MAX_QUESTIONS) {
     localStorage.setItem("recent-score", score);
-    return window.location.assign("../html/end.html");
+    // Go to the end page
+    return window.location.assign("/end.html");
   }
   questionCounter++;
   questionCounterText.textContent = `${questionCounter}/${MAX_QUESTIONS}`;
+  // Update progress bar
   progressBarFull.style.width = `${(questionCounter / MAX_QUESTIONS) * 100}%`;
+  
   const questionIndex = Math.floor(Math.random() * availableQuestions.length);
   currentQuestion = availableQuestions[questionIndex];
   question.textContent = currentQuestion.question;
