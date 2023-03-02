@@ -12,11 +12,13 @@ let availableQuestions = [];
 
 let questions = [];
 
+let MAX_QUESTIONS;
+
 fetch("questions.json")
   .then((res) => res.json())
   .then((loadedQuestions) => {
-    console.log(loadedQuestions);
     questions = loadedQuestions;
+    MAX_QUESTIONS = questions.length;
     start();
   })
   .catch((err) => {
@@ -24,8 +26,6 @@ fetch("questions.json")
   });
 
 const CORRECT_BONUS = 10;
-const MAX_QUESTIONS = questions.length;
-
 start = () => {
   questionCounter = 0;
   score = 0;
@@ -43,7 +43,7 @@ getNewQuestion = () => {
   questionCounterText.textContent = `${questionCounter}/${MAX_QUESTIONS}`;
   // Update progress bar
   progressBarFull.style.width = `${(questionCounter / MAX_QUESTIONS) * 100}%`;
-  
+
   const questionIndex = Math.floor(Math.random() * availableQuestions.length);
   currentQuestion = availableQuestions[questionIndex];
   question.textContent = currentQuestion.question;
