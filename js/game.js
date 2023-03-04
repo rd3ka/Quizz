@@ -7,17 +7,36 @@ const progressBarFull = document.getElementById("progressBarFull");
 let currentQuestion = {};
 let acceptingAnswers = false;
 let score = 0,
-  questionCounter = 0;
-let availableQuestions = [];
+  questionCounter = 0,
+  seconds = 15;
+let availableQuestions = [],
+  questions = [];
 
-let questions = [];
+let MAX_QUESTIONS, timer;
 
-let MAX_QUESTIONS;
-
-fetch("questions.json")
+fetch(
+  "https://opentdb.com/api.php?amount=15&category=31&difficulty=easy&type=multiple"
+)
   .then((res) => res.json())
-  .then((loadedQuestions) => {
-    questions = loadedQuestions;
+  .then((data) => {
+    console.log(data.results);
+    questions = data.results.map((q) => {
+      const formattedQ = {
+        question: q.question.replace(/&quot;/g, '"').replace(/&#039;/g, "'"),
+      };
+
+      const answerChoices = [...q.incorrect_answers];
+      formattedQ.answer = Math.floor(Math.random() * 3) + 1;
+      answerChoices.splice(formattedQ.answer - 1, 0, q.correct_answer);
+
+      answerChoices.forEach((choice, index) => {
+        formattedQ["choice" + (index + 1)] = choice
+          .replace(/&amp;/g, "&")
+          .replace(/&quot;/g, '"')
+          .replace(/&#039;/g, "'");
+      });
+      return formattedQ;
+    });
     MAX_QUESTIONS = questions.length;
     start();
   })
@@ -55,6 +74,8 @@ getNewQuestion = () => {
 
   availableQuestions.splice(questionIndex, 1);
   acceptingAnswers = true;
+  seconds = 15;
+  startTimer();
 };
 
 choices.forEach((choice) => {
@@ -72,12 +93,29 @@ choices.forEach((choice) => {
     selectedChoice.parentElement.classList.add(classToApply);
     setTimeout(() => {
       selectedChoice.parentElement.classList.remove(classToApply);
+      clearInterval(timer);
       getNewQuestion();
-    }, 1200);
+    }, 500);
   });
 });
 
 incrementScore = (num) => {
   score += num;
   scoreText.textContent = score;
+};
+
+startTimer = () => {
+  timer = setInterval(() => {
+    seconds > 9
+      ? (document.getElementById("safeTimerDisplay").textContent =
+          "00:" + seconds)
+      : (document.getElementById("safeTimerDisplay").textContent =
+          "00:0" + seconds);
+    seconds--;
+    if (seconds < 0) {
+      clearInterval(timer);
+      incrementScore(0);
+      getNewQuestion();
+    }
+  }, 1000);
 };
