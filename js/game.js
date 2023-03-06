@@ -45,6 +45,7 @@ fetch(
   });
 
 const CORRECT_BONUS = 10;
+
 start = () => {
   questionCounter = 0;
   score = 0;
@@ -59,9 +60,8 @@ getNewQuestion = () => {
     return window.location.assign("../html/end.html");
   }
   questionCounter++;
+  //questionCounter to be used to keep track of the number of questions
   questionCounterText.textContent = `${questionCounter}/${MAX_QUESTIONS}`;
-  // Update progress bar
-  progressBarFull.style.width = `${(questionCounter / MAX_QUESTIONS) * 100}%`;
 
   const questionIndex = Math.floor(Math.random() * availableQuestions.length);
   currentQuestion = availableQuestions[questionIndex];
@@ -112,6 +112,13 @@ startTimer = () => {
       : (document.getElementById("safeTimerDisplay").textContent =
           "00:0" + seconds);
     seconds--;
+
+    // Use progressBar to show time left
+    let totalTime = 15;
+    progressBarFull.style.width = `${
+      ((totalTime - seconds) / totalTime) * 100
+    }%`;
+
     if (seconds < 0) {
       clearInterval(timer);
       incrementScore(0);
