@@ -1,6 +1,10 @@
 const question = document.getElementById("question");
 const choices = Array.from(document.getElementsByClassName("choice-text"));
 const questionCounterText = document.getElementById("questionCounter");
+
+const loader = document.getElementById("loader");
+const game = document.getElementById("game");
+
 const scoreText = document.getElementById("score");
 const progressBarFull = document.getElementById("progressBarFull");
 
@@ -38,6 +42,8 @@ fetch(
       return formattedQ;
     });
     MAX_QUESTIONS = questions.length;
+    game.classList.remove("hidden");
+    loader.classList.add("hidden");
     start();
   })
   .catch((err) => {
