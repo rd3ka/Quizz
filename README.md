@@ -12,6 +12,7 @@ For the front-end structure and styling, `HTML` & `CSS` is used and back-end is 
 
 ## Todo
 - [ ] Add transition animation
+- [x] Add a spinner/loader
 - [ ] Make it more responsive, remove unnecessary delays
 - [ ] Add more styling to improve UI/UX
 - [ ] Deploy
