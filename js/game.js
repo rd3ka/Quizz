@@ -1,134 +1,155 @@
-const question = document.getElementById("question");
-const choices = Array.from(document.getElementsByClassName("choice-text"));
-const questionCounterText = document.getElementById("questionCounter");
+class qdata {
+    #question;
+    #incorrectChoices;
+    #correctChoice;
+    #choices;
 
-const loader = document.getElementById("loader");
-const game = document.getElementById("game");
-
-const scoreText = document.getElementById("score");
-const progressBarFull = document.getElementById("progressBarFull");
-
-let currentQuestion = {};
-let acceptingAnswers = false;
-let score = 0,
-  questionCounter = 0,
-  seconds = 15;
-let availableQuestions = [],
-  questions = [];
-
-let MAX_QUESTIONS, timer;
-
-fetch(
-  "https://opentdb.com/api.php?amount=15&category=31&difficulty=easy&type=multiple"
-)
-  .then((res) => res.json())
-  .then((data) => {
-    console.log(data.results);
-    questions = data.results.map((q) => {
-      const formattedQ = {
-        question: q.question.replace(/&quot;/g, '"').replace(/&#039;/g, "'"),
-      };
-
-      const answerChoices = [...q.incorrect_answers];
-      formattedQ.answer = Math.floor(Math.random() * 3) + 1;
-      answerChoices.splice(formattedQ.answer - 1, 0, q.correct_answer);
-
-      answerChoices.forEach((choice, index) => {
-        formattedQ["choice" + (index + 1)] = choice
-          .replace(/&amp;/g, "&")
-          .replace(/&quot;/g, '"')
-          .replace(/&#039;/g, "'");
-      });
-      return formattedQ;
-    });
-    MAX_QUESTIONS = questions.length;
-    game.classList.remove("hidden");
-    loader.classList.add("hidden");
-    start();
-  })
-  .catch((err) => {
-    console.error(err);
-  });
-
-const CORRECT_BONUS = 10;
-
-start = () => {
-  questionCounter = 0;
-  score = 0;
-  availableQuestions = [...questions];
-  getNewQuestion();
-};
-
-getNewQuestion = () => {
-  if (availableQuestions.length === 0 || questionCounter >= MAX_QUESTIONS) {
-    localStorage.setItem("recent-score", score);
-    // Go to the end page
-    return window.location.assign("../html/end.html");
-  }
-  questionCounter++;
-  //questionCounter to be used to keep track of the number of questions
-  questionCounterText.textContent = `${questionCounter}/${MAX_QUESTIONS}`;
-
-  const questionIndex = Math.floor(Math.random() * availableQuestions.length);
-  currentQuestion = availableQuestions[questionIndex];
-  question.textContent = currentQuestion.question;
-
-  choices.forEach((choice) => {
-    const number = choice.dataset["number"];
-    choice.textContent = currentQuestion["choice" + number];
-  });
-
-  availableQuestions.splice(questionIndex, 1);
-  acceptingAnswers = true;
-  seconds = 15;
-  startTimer();
-};
-
-choices.forEach((choice) => {
-  choice.addEventListener("click", (e) => {
-    if (!acceptingAnswers) return;
-
-    acceptingAnswers = false;
-    const selectedChoice = e.target;
-    const selectedAnswer = selectedChoice.dataset["number"];
-    const classToApply =
-      selectedAnswer == currentQuestion.answer ? "correct" : "incorrect";
-
-    incrementScore(classToApply === "correct" ? CORRECT_BONUS : 0);
-
-    selectedChoice.parentElement.classList.add(classToApply);
-    setTimeout(() => {
-      selectedChoice.parentElement.classList.remove(classToApply);
-      clearInterval(timer);
-      getNewQuestion();
-    }, 500);
-  });
-});
-
-incrementScore = (num) => {
-  score += num;
-  scoreText.textContent = score;
-};
-
-startTimer = () => {
-  timer = setInterval(() => {
-    seconds > 9
-      ? (document.getElementById("safeTimerDisplay").textContent =
-          "00:" + seconds)
-      : (document.getElementById("safeTimerDisplay").textContent =
-          "00:0" + seconds);
-    seconds--;
-
-    // Use progressBar to show time left
-    let totalTime = 15;
-    progressBarFull.style.width = `${
-      ((totalTime - seconds) / totalTime) * 100
-    }%`;
-
-    if (seconds < 0) {
-      clearInterval(timer);
-      incrementScore(0);
-      getNewQuestion();
+    constructor(JSONResponse) {
+        this.#question = JSONResponse.question;
+        this.#incorrectChoices = JSONResponse.incorrect_answers;
+        this.#correctChoice = JSONResponse.correct_answer;
     }
-  }, 1000);
-};
+
+    filterReplace(str) {
+        return str.replace(/&amp;/g, "&")
+            .replace(/&quot;/g, '"')
+            .replace(/&#039;/g, "'");
+    }
+
+    get question() {
+        return this.filterReplace(this.#question);
+    }
+
+    get choices() {
+        this.#choices = [...this.#incorrectChoices];
+        this.#choices.push(this.correctChoice)
+        /* Applying Fisher-Yates Shuffle */
+        let currentIndex = this.#choices.length, randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [this.#choices[currentIndex], this.#choices[randomIndex]] =
+                [this.#choices[randomIndex], this.#choices[currentIndex]];
+        }
+        return this.#choices.map(item => this.filterReplace(item))
+            .reduce((a, v, i) => ({ ...a, ["choice" + (i + 1)]: v }), {})
+    }
+
+    get correctChoice() {
+        return this.#correctChoice;
+    }
+}
+
+fetch("https://opentdb.com/api.php?amount=15&category=31&difficulty=easy&type=multiple")
+    .then(response => response.json())
+    .then(data => {
+        // console.log(data.results);
+        let score, questionCounter, seconds, timer, currentQuizData, itemsLeft, QuizData;
+        let acceptAnswers;
+        /* Maximum Number of Questions Asked */
+        const MaxData = data.results.length;
+        /* helper function - Get New QuizData */
+        const getNewData = () => {
+            itemsLeft--;
+            currentQuizData = QuizData.pop();
+        }
+        /* helper function - get question */
+        const getQuestion = () => currentQuizData.question;
+        /* helper function - get options */
+        const getOptions = () => currentQuizData.choices;
+        /* helper function - check for correctness */
+        const checkAnswer = (userChoice) => (userChoice === currentQuizData.correctChoice);
+
+        start = () => {
+            QuizData = data.results.map(q => new qdata(q));
+            itemsLeft = MaxData;
+            score = questionCounter = 0;
+            getNewQuestion();
+        }
+        /* Award score for correct answer */
+        awardScore = (s) => {
+            score += s;
+            document.getElementById("score").textContent = score;
+        }
+
+        getNewQuestion = () => {
+            getNewData()
+            /* Fetching data from object */
+            if (itemsLeft === 0 || questionCounter >= MaxData) {
+                localStorage.setItem("recent-score", score);
+                console.log("bye!")
+                return window.location.assign("../html/end.html");
+            }
+            questionCounter++;
+            /* Updating the Question Number */
+            document.getElementById("questionCounter").textContent =
+                `${questionCounter}/${MaxData}`
+            /* Displaying the Question */
+            document.getElementById("question").textContent = getQuestion();
+            /* Displaying multiple choices */
+            const choices = Array.from(document.getElementsByClassName("choice-text"));
+            let options = getOptions();
+            choices.forEach((choice) => {
+                const number = choice.dataset.number;
+                choice.textContent = options["choice" + number];
+            })
+            seconds = 15;
+            startTimer();
+            /* Start to accept answers */
+            acceptAnswers = true;
+            /* removing the spinner/loader */
+            document.getElementById("loader").classList.add("hidden")
+            document.getElementById("game").classList.remove("hidden");
+            /* Seconds to accept some answers! */
+            choiceOptions();
+        }
+
+        choiceOptions = () => {
+            const choices = Array.from(document.getElementsByClassName("choice-text"));
+            choices.forEach(choice => {
+                choice.addEventListener('click', e => {
+                    if (!acceptAnswers) return;
+
+                    acceptAnswers = false;
+                    /* Choice picked by user */
+                    const userChoice = choice.textContent;
+                    /* css style classes to show incorrect/correct pick */
+                    const classToApply =
+                        checkAnswer(userChoice) ? "correct" : "incorrect";
+
+                    awardScore(classToApply === "correct" ? 10 : 0); //Award for correct answer
+
+                    /* targeting parentElement for css style */
+                    e.target.parentElement.classList.add(classToApply);
+                    /* wait for next question once answered */
+                    setTimeout(() => {
+                        e.target.parentElement.classList.remove(classToApply);
+                        clearInterval(timer);
+                        getNewQuestion();
+                    }, 700);
+                })
+            })
+        }
+
+        startTimer = () => {
+            timer = setInterval(() => {
+                const safeTimerDisplay = document.getElementById("safeTimerDisplay");
+                seconds > 9 ? safeTimerDisplay.textContent = "00:" + seconds
+                    : safeTimerDisplay.textContent = "00:0" + seconds
+                seconds -= 1;
+
+                let totalTime = 15;
+                document.getElementById("progressBarFull").style.width
+                    = `${((totalTime - seconds) / totalTime) * 100}%`
+
+                if (seconds < 0) {
+                    clearInterval(timer);
+                    awardScore(0);
+                    getNewQuestion();
+                }
+            }, 1000);
+        }
+
+        start();
+    })
+    .catch(err => console.error(err))
