@@ -11,6 +11,7 @@ With the rapid growth of web and web based technologies, I started to think how 
 For the front-end structure and styling, `HTML` & `CSS` is used and back-end is handled by vanilla `JavaScript`. Data is fetched using `fetch` API from [OpenTriviaDB](https://opentdb.com/). 
 
 ## Todo
+- [ ] Fix `Final Score` not being shown in Mozilla Firefox
 - [ ] Add transition animation
 - [x] Add a spinner/loader
 - [ ] Make it more responsive, remove unnecessary delays
